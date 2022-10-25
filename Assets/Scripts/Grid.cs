@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using UnityEditor;
 using UnityEngine;
 
 public class Grid : MonoBehaviour
@@ -62,26 +63,25 @@ public class Grid : MonoBehaviour
 
     private Bubble SpawnNewBubble(Vector3 position, Color color)
     {
-        print("position "+position);
         Bubble bubble = Instantiate(bubblePrefab.transform, position, Quaternion.identity, transform).GetComponent<Bubble>();
         bubble.SetColor(color);
         bubble.gameObject.SetActive(true);
         bubbles.Add(bubble);
         return bubble;
     }
-
-    public void AddNewBubble(Bubble bubble, Collision2D collision)
+    //Улучшить проверку размещения, иногда может разместить туда где уже есть пузырь
+    public void AddNewBubble(Bubble bubble, Transform trans)
     {
-        float contactX = collision.transform.position.x;
-        float contactY = collision.transform.position.y;
+        float contactX = trans.position.x;
+        float contactY = trans.position.y;
         float positionX = bubble.transform.position.x;
         float positionY = bubble.transform.position.y;
-        float x = collision.transform.position.x - 0.5f;
-        float y = collision.transform.position.y - 0.85f;
+        float x = trans.position.x - 0.5f;
+        float y = trans.position.y - 0.85f;
         if (contactX < positionX)
-            x = collision.transform.position.x + 0.5f;
+            x = trans.position.x + 0.5f;
         if (contactY < positionY)
-            y = collision.transform.position.y + 0.85f;
+            y = trans.position.y + 0.85f;
         print("new Vector3(x, y, 0) " + new Vector3(x, y, 0));
         Bubble newBubble =  SpawnNewBubble(new Vector3(x, y, 0), bubble.Color);
         Destroy(bubble.gameObject);
@@ -94,6 +94,7 @@ public class Grid : MonoBehaviour
         return Colors[Random.Range(0, Colors.Count)];
     }
 
+    //Сделать так чтобы если пузыри не имеют связи они падали
     private void CheckDestroy(Bubble bubble)
     {
         List<Transform> opportunes = new List<Transform>();
@@ -101,8 +102,8 @@ public class Grid : MonoBehaviour
         for (int i = 0; i < opportunes.Count; i++)
         {
             Transform item = opportunes[i];
-            Collider2D[] collisions = Physics2D.OverlapCircleAll(item.position, item.GetComponent<CircleCollider2D>().radius + 0.01f);
-
+            radius = item.GetComponent<CircleCollider2D>().radius;
+            Collider2D[] collisions = Physics2D.OverlapCircleAll(item.position, item.GetComponent<CircleCollider2D>().radius + 0.025f);
             foreach (var item1 in collisions)
             {
                 if (item1.tag != "bubble")
@@ -121,6 +122,12 @@ public class Grid : MonoBehaviour
             }
 
 
+    }
+    private float radius = 1;
+    private void OnDrawGizmos()
+    {
+        Gizmos.color = Color.red;
+        Gizmos.DrawSphere(Vector3.zero, radius);
     }
 
 }

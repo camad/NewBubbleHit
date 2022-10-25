@@ -1011,10 +1011,6 @@ PrefabInstance:
       propertyPath: m_Name
       value: Bubble
       objectReference: {fileID: 0}
-    - target: {fileID: 7043220351378218627, guid: be3f674bbd2fb384e9190f5d70601f2e, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
     - target: {fileID: 8309087599056723948, guid: be3f674bbd2fb384e9190f5d70601f2e, type: 3}
       propertyPath: m_RootOrder
       value: 3

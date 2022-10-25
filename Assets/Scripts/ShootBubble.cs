@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
 public class ShootBubble : Bubble
@@ -16,20 +17,29 @@ public class ShootBubble : Bubble
         rb.velocity = direction * 2.5f;
     }
 
+    void FixedUpdate()
+    {
+        if (check)
+            return;
+        RaycastHit2D hit = Physics2D.Raycast(transform.position, rb.velocity, 0.7f, 1 << 6);
+        if (hit.collider != null)
+            Debug.Log(hit.transform);
+        if (hit.collider != null)
+        {
+            SetPositionInGreed(hit.transform);
+        }
+    }
     private void OnCollisionEnter2D(Collision2D collision)
     {
         if (check)
             return;
-        if (collision.transform.tag == "wall")
-            rb.velocity = rb.velocity * -1;
         if (collision.transform.tag == "bubble")
-            SetPositionInGreed(collision);
+            SetPositionInGreed(collision.transform);
     }
 
-    private void SetPositionInGreed(Collision2D collision)
+    private void SetPositionInGreed(Transform trans)
     {
-        Debug.Log(collision.transform.tag);
         check = true;
-        Grid.Instance.AddNewBubble(this, collision);
+        Grid.Instance.AddNewBubble(this, trans);
     }
 }
