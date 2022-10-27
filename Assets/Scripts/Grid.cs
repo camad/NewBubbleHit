@@ -17,11 +17,14 @@ public class Grid : MonoBehaviour
     private List<Color> Colors = new List<Color>();
 
     private List<Bubble> bubbles = new List<Bubble>();
-    private float offsetX = 0.5f;
+    private float offsetX = 0.55f;
+    private float offsetY = 0.95f;
+    private float offsetXCurrent;
 
     void Start()
     {
         Instance = this;
+        offsetXCurrent = offsetX;
         CreateGrid();
     }
     private void Update()
@@ -34,7 +37,7 @@ public class Grid : MonoBehaviour
     {
         for (int y = height; y > 0; y--)
         {
-            GenerateLine(y - (0.15f * y) + 2.2f);
+            GenerateLine(y - (0.15f * y) + 1.5f + y * 0.1f);
         }
     }
     private void GenerateNextLine()
@@ -43,25 +46,25 @@ public class Grid : MonoBehaviour
         foreach (var item in bubbles)
         {
             position = item.transform.position;
-            position.y -= 0.85f;
+            position.y -= offsetY;
             item.transform.position = position;
         }
-        GenerateLine(6.45f);
+        GenerateLine(6.3f);
     }
 
     private void GenerateLine(float y)
     {
         for (int x = 0; x < width; x++)
         {
-            SpawnNewBubble(new Vector3(x + offsetX - (width / 2) - 0.25f, y, 0) , GetRandomColor());
+            SpawnBubble(new Vector3(x + offsetXCurrent - (width / 2) - 0.45f + x * 0.1f, y, 0) , GetRandomColor());
         }
-        if (offsetX == 0.5f)
-            offsetX = 0;
+        if (offsetX == offsetXCurrent)
+            offsetXCurrent = 0;
         else
-            offsetX = 0.5f;
+            offsetXCurrent = offsetX;
     }
 
-    private Bubble SpawnNewBubble(Vector3 position, Color color)
+    private Bubble SpawnBubble(Vector3 position, Color color)
     {
         Bubble bubble = Instantiate(bubblePrefab.transform, position, Quaternion.identity, transform).GetComponent<Bubble>();
         bubble.SetColor(color);
@@ -69,24 +72,28 @@ public class Grid : MonoBehaviour
         bubbles.Add(bubble);
         return bubble;
     }
+    public void ShootEnd(Bubble bubble, Vector3 position)
+    {
+        Bubble newBubble = SpawnBubble(position, bubble.Color);
+        Destroy(bubble.gameObject);
+        ShootService.Instance.SpawnNextBubble();
+        CheckDestroy(newBubble);
+    }
     //Улучшить проверку размещения, иногда может разместить туда где уже есть пузырь
-    public void AddNewBubble(Bubble bubble, Transform trans)
+    public Vector3 GetBubbleNewPosition(Bubble bubble, Transform trans)
     {
         float contactX = trans.position.x;
         float contactY = trans.position.y;
         float positionX = bubble.transform.position.x;
         float positionY = bubble.transform.position.y;
-        float x = trans.position.x - 0.5f;
-        float y = trans.position.y - 0.85f;
+        float x = trans.position.x - offsetX;
+        float y = trans.position.y - offsetY;
         if (contactX < positionX)
-            x = trans.position.x + 0.5f;
+            x = trans.position.x + offsetX;
         if (contactY < positionY)
-            y = trans.position.y + 0.85f;
-        print("new Vector3(x, y, 0) " + new Vector3(x, y, 0));
-        Bubble newBubble =  SpawnNewBubble(new Vector3(x, y, 0), bubble.Color);
-        Destroy(bubble.gameObject);
-        ShootService.Instance.SpawnNextBubble();
-        CheckDestroy(newBubble);
+            y = trans.position.y + offsetY;
+        return new Vector3(x, y, 0);
+
     }
 
     public Color GetRandomColor()
@@ -102,8 +109,7 @@ public class Grid : MonoBehaviour
         for (int i = 0; i < opportunes.Count; i++)
         {
             Transform item = opportunes[i];
-            radius = item.GetComponent<CircleCollider2D>().radius;
-            Collider2D[] collisions = Physics2D.OverlapCircleAll(item.position, item.GetComponent<CircleCollider2D>().radius + 0.025f);
+            Collider2D[] collisions = Physics2D.OverlapCircleAll(item.position, 0.7f);
             foreach (var item1 in collisions)
             {
                 if (item1.tag != "bubble")
@@ -123,11 +129,4 @@ public class Grid : MonoBehaviour
 
 
     }
-    private float radius = 1;
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(Vector3.zero, radius);
-    }
-
 }
