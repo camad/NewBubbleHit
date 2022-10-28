@@ -19,7 +19,8 @@ public class ShootBubble : Bubble
 
     public void Shoot(Vector2 direction)
     {
-        rb.velocity = direction.normalized * 30f;
+        if(transform)
+            rb.velocity = direction.normalized * 30f;
     }
 
 

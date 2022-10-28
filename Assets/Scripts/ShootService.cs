@@ -15,10 +15,14 @@ public class ShootService : MonoBehaviour
     private Transform bubblePrefab;
     [SerializeField]
     private ShootBubble currentBubble;
-
-    private void Start()
+    [SerializeField]
+    private SpriteRenderer nextBubble;
+    private Color nextBubbleColor;
+    private async void Start()
     {
         Instance = this;
+        await Task.Delay(200);
+        NextBubleColor();
         SpawnNextBubble();
     }
     void Update()
@@ -33,10 +37,19 @@ public class ShootService : MonoBehaviour
         }
     }
 
+
     public void SpawnNextBubble()
     {
+        if (GameEnd.Instance.GetEndGame)
+            return;
         currentBubble = Instantiate(bubblePrefab, startPosition, Quaternion.identity).GetComponent<ShootBubble>();
-        currentBubble.SetColor(Grid.Instance.GetRandomColor());
+        currentBubble.SetColor(nextBubbleColor);
         currentBubble.gameObject.SetActive(true);
+        NextBubleColor();
+    }
+    private void NextBubleColor()
+    {
+        nextBubbleColor = Grid.Instance.GetRandomColor();
+        nextBubble.color = nextBubbleColor;
     }
 }

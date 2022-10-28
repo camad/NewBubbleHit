@@ -30,6 +30,8 @@ public class Grid : MonoBehaviour
     private int points;
     private int misses;
     private int missesMax = 3;
+
+    public int GetPoints { get { return points; } }
     async void Start()
     {
         Instance = this;
@@ -201,12 +203,10 @@ public class Grid : MonoBehaviour
         {
             if(bubbles[i].transform.localPosition.y > -1)
             {
-                print(bubbles[i].transform.localPosition.y);
                 checkFirstBubble = true;
                 break;
             } 
         }
-        print(checkFirstBubble);
         if (!checkFirstBubble)
         {
             destroy.Clear();
@@ -221,6 +221,10 @@ public class Grid : MonoBehaviour
             bubbles.Remove(item.transform.GetComponent<Bubble>());
             Destroy(item.gameObject);
             AddPoints(1);
+        }
+        if (!checkFirstBubble)
+        {
+            GameEnd.Instance.GameEndScreenLoad(0);
         }
     }
 
