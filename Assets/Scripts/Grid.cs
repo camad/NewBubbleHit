@@ -121,6 +121,31 @@ public class Grid : MonoBehaviour
         return new Vector3(x, y, 0);
 
     }
+    //Улучшить проверку размещения, иногда может разместить туда где уже есть пузырь
+    public Vector3 GetBubbleNewPosition1(RaycastHit2D hit)
+    {
+        Transform trans = hit.transform;
+        float contactX = trans.position.x;
+        float contactY = trans.position.y;
+        float positionX = hit.point.x;
+        float positionY = hit.point.y;
+        float x = trans.position.x - offsetX;
+        float y = trans.position.y - offsetY;
+
+        if (contactX < positionX)
+            x = trans.position.x + offsetX;
+        if (contactY < positionY)
+            y = trans.position.y + offsetY;
+
+        float borferOffset = 0;
+        if (x > 4f)
+            borferOffset = -1.1f;
+        if (x < -4.5f)
+            borferOffset = 1.1f;
+        x += borferOffset;
+        return new Vector3(x, y, 0);
+
+    }
 
     public Color GetRandomColor()
     {
