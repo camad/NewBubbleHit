@@ -23,6 +23,7 @@ public class Grid : MonoBehaviour
     private TextMeshProUGUI pointsText;
     [SerializeField]
     private TextMeshProUGUI missesText;
+    [SerializeField]
     private List<Bubble> bubbles = new List<Bubble>();
     private float offsetX = 0.55f;
     private float offsetY = 0.95f;
@@ -53,7 +54,7 @@ public class Grid : MonoBehaviour
         for (int y = height; y > 0; y--)
         {
             GenerateLine(y - (0.15f * y) + 4.34f + y * 0.1f);
-            await Task.Delay(width * 50);
+            await Task.Delay(width * 15);
         }
     }
     private void GenerateNextLine()
@@ -73,7 +74,7 @@ public class Grid : MonoBehaviour
         for (int x = 0; x < width; x++)
         {
             SpawnBubble(new Vector3(x + offsetXCurrent - (width / 2) - 0.13f + x * 0.1f, y, 0) , GetRandomColor());
-            await Task.Delay(20);
+            await Task.Delay(10);
         }
         if (offsetX == offsetXCurrent)
             offsetXCurrent = 0;
@@ -97,32 +98,7 @@ public class Grid : MonoBehaviour
         ShootService.Instance.SpawnNextBubble();
         CheckDestroy(newBubble);
     }
-    //Улучшить проверку размещения, иногда может разместить туда где уже есть пузырь
-    public Vector3 GetBubbleNewPosition(Bubble bubble, Transform trans)
-    {
-        float contactX = trans.position.x;
-        float contactY = trans.position.y;
-        float positionX = bubble.transform.position.x;
-        float positionY = bubble.transform.position.y;
-        float x = trans.position.x - offsetX;
-        float y = trans.position.y - offsetY;
-       
-        if (contactX < positionX)
-            x = trans.position.x + offsetX;
-        if (contactY < positionY)
-            y = trans.position.y + offsetY;
-
-        float borferOffset = 0;
-        if (x > 4f)
-            borferOffset = -1.1f;
-        if (x < -4.5f)
-            borferOffset = 1.1f;
-        x += borferOffset;
-        return new Vector3(x, y, 0);
-
-    }
-    //Улучшить проверку размещения, иногда может разместить туда где уже есть пузырь
-    public Vector3 GetBubbleNewPosition1(RaycastHit2D hit)
+    public Vector3 GetBubbleNewPosition(RaycastHit2D hit)
     {
         Transform trans = hit.transform;
         float contactX = trans.position.x;
@@ -152,7 +128,6 @@ public class Grid : MonoBehaviour
         return Colors[Random.Range(0, Colors.Count)];
     }
 
-    //Сделать так чтобы если пузыри не имеют связи они падали
     private async void CheckDestroy(Bubble bubble)
     {
         List<Transform> opportunes = new List<Transform>();
@@ -175,10 +150,10 @@ public class Grid : MonoBehaviour
         {
             for (int i = 0; i < opportunes.Count; i++)
             {
-                await Task.Delay(100);
                 bubbles.Remove(opportunes[i].GetComponent<Bubble>());
-                Destroy(opportunes[i].gameObject);
+                opportunes[i].GetComponent<Bubble>().DestroyAnimation();
                 AddPoints(1);
+                await Task.Delay(50);
             }
         }
         else
@@ -218,9 +193,11 @@ public class Grid : MonoBehaviour
             if (!opportunes.Contains(item.transform))
                 destroy.Add(item.transform);
         }
-        if(bubbles.Count == 1)
+        print("opportunes " + opportunes.Count);
+        print("destroy " + destroy.Count);
+        if (bubbles.Count == 1)
         {
-            Destroy(bubbles[0]);
+            bubbles[0].DestroyAnimation();
             bubbles.Clear();
         }
         bool checkFirstBubble = false;
@@ -242,10 +219,10 @@ public class Grid : MonoBehaviour
         for (int i = 0; i < destroy.Count; i++)
         {
             Transform item = destroy[i].transform;
-            await Task.Delay(100);
-            bubbles.Remove(item.transform.GetComponent<Bubble>());
-            Destroy(item.gameObject);
+            bubbles.Remove(item.GetComponent<Bubble>());
+            opportunes[i].GetComponent<Bubble>().DestroyAnimation();
             AddPoints(1);
+            await Task.Delay(50);
         }
         if (!checkFirstBubble)
         {
